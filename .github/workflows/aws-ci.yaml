@@ -37,7 +37,7 @@ jobs:
         id: sha
         run: |
           sed -i '/^RUN git clone -b main https:\/\/github.com\/k8snetworkplumbingwg\/linuxptp-daemon.git  \/go\/src\/github.com\/k8snetworkplumbingwg\/linuxptp-daemon$/c\
-          RUN git clone -b main https://github.com/edcdavid/linuxptp-daemon-upstream.git  /go/src/github.com/k8snetworkplumbingwg/linuxptp-daemon\nRUN git checkout ${{ github.sha }}' ./ptp-operator/ptp-tools/Dockerfile.lptpd
+          RUN git clone -b main https://github.com/edcdavid-org/linuxptp-daemon-test.git  /go/src/github.com/k8snetworkplumbingwg/linuxptp-daemon\nRUN git checkout ${{ github.sha }}' ./ptp-operator/ptp-tools/Dockerfile.lptpd
           cat ./ptp-operator/ptp-tools/Dockerfile.lptpd
 
       - name: Configure AWS credentials
