@@ -28,7 +28,7 @@ jobs:
             }
             console.log(`eventName='${context.eventName}', action='${context.payload.action}'.`)
             // Only remove the label if this is a new commit
-            if (context.eventName === 'pull_request' && context.payload.action === 'synchronize') {
+            if (context.eventName === 'pull_request_target' && context.payload.action === 'synchronize') {
               await github.rest.issues.removeLabel({
                 owner,
                 repo,
