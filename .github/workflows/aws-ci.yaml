@@ -19,14 +19,48 @@ jobs:
             const pr = context.payload.pull_request;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-
+            
+            const fs = require('fs');
+            const yaml = require('js-yaml');
             const labels = pr.labels.map(l => l.name);
+            const appliedLabel = context.payload.label.name;
+            const actor = context.actor;
+            const ownersPath = './OWNERS';
+
+            console.log(`eventName='${context.eventName}', action='${context.payload.action}', actor='${actor}'.`)
+
+            // Check actor
+            // Someone is trying to apply a label, but it is not one that we care about
+            if (context.eventName === 'pull_request_target' && context.payload.action === 'labeled') {
+              if (appliedLabel !== label) {
+                core.setFailed(`Not '${label}' label; ignoring.`);
+              }
+              
+              if (!fs.existsSync(ownersPath)) {
+                core.setFailed('OWNERS file not found.');
+                return;
+              }
+
+              const ownersData = yaml.load(fs.readFileSync(ownersPath, 'utf8'));
+              const approvers = ownersData.approvers || [];
+
+              console.log(`User '${actor}' tried to apply '${label}' label.`);
+              console.log(`Approvers from OWNERS: ${approvers.join(', ')}`);
+
+              if (!approvers.includes(actor)) {
+                core.setFailed(`User '${actor}' is not listed as an approver in OWNERS file.`);
+              } else {
+                console.log(`✅ '${actor}' is a valid approver.`);
+              }
+            }
+
+            console.log(`eventName='${context.eventName}', action='${context.payload.action}', actor='${actor}'.`)
 
             if (!labels.includes(label)) {
               core.setFailed(`Missing required '${label}' label. PR is not ok to test.`);
               return;
             }
-            console.log(`eventName='${context.eventName}', action='${context.payload.action}'.`)
+
             // Only remove the label if this is a new commit
             if (context.eventName === 'pull_request_target' && context.payload.action === 'synchronize') {
               await github.rest.issues.removeLabel({
@@ -56,7 +90,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-            role-to-assume: arn:aws:iam::058264082309:role/github-oidc-setup-david-Role-Kk44xkca6vIm
+            role-to-assume: arn:aws:iam::939345161466:role/github-oidc-setup-david-Role-8DcbDlLGfv4O
             role-session-name: ${{ github.run_id }}
             aws-region: us-east-1
 
@@ -64,10 +98,10 @@ jobs:
         id: launch
         run: |
           INSTANCE_ID=$(aws ec2 run-instances \
-            --image-id ami-0f7270e9a0e492eac \
-            --subnet-id subnet-04ee218fe8f32cad5 \
+            --image-id ami-0163d4a3a5e79c10a \
+            --subnet-id subnet-03e8151444372854e \
             --instance-type m6a.xlarge \
-            --security-group-ids sg-05e700edc2ed0a2d5 \
+            --security-group-ids sg-0f20fd004e72616d3 \
             --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=ptp-operator PR-${{ github.event.number }}}]' \
             --query 'Instances[0].InstanceId' \
             --key-name ptp-sshkey-1 \
