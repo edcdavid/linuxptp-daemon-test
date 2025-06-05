@@ -105,7 +105,7 @@ jobs:
         if: always()  # Ensure cleanup runs even if previous steps fail
         run: |
             echo "Cleaning up EC2 INSTANCE_ID=$instance_id"
-            aws ec2 terminate-instances --instance-ids $instance_id
+            #aws ec2 terminate-instances --instance-ids $instance_id
 
       - name: Notify cleanup complete
         run: echo "Cleanup task completed."
